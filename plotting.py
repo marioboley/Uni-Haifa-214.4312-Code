@@ -122,6 +122,17 @@ def superimpose_axis(ax, positions, labels=None, **kwargs):
 
 Axes.superimpose_axis = superimpose_axis
 
+def histo_1d(ax, y, pmf=None):
+    x = np.arange(y.min(), y.max()+1)
+    ax.hist(y, np.arange(y.min() - 0.5, y.max() + 1.5), density=True, align='mid')
+    if pmf is not None:
+        p = pmf(x)
+        ax.vlines(x, 0, p, colors='k', linestyles='--')
+        ax.scatter(x, p, facecolors='white', linewidths=1.5, edgecolors='k', zorder=3)
+    ax.set_ylim(ax.get_ylim()*np.array([0, 1.01]))
+    ax.margins(x=0)
+    ax.set_xlabel('$x$')
+    ax.set_ylabel(r'$|\{i: x_i = x\}|/n$')
 
 # def superimpose_axis(ax, positions, labels=None, axis='x', side='positive',
 #                      color='k', tick_size=5, label_pad=4, fontsize=9, rotation=0,
