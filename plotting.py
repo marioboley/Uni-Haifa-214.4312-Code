@@ -5,6 +5,63 @@ import matplotlib.text as mtext
 import matplotlib.patches as mpatches
 import matplotlib.transforms as mtransforms
 from matplotlib.axes import Axes
+from matplotlib import pyplot as plt
+
+plot = Axes.plot
+scatter = Axes.scatter
+axvline = Axes.axvline
+
+def subplotgrid(xlabels=None, ylabels=None, intitles=None, rows=None, cols=None, *,
+                subplotsize=(4, 4), tight_layout=True, sharex=True, sharey=True,
+                xlims=None, ylims=None, xmargins=0, ymargins=None):
+    xlabels = None if xlabels is None else np.atleast_1d(xlabels)
+    ylabels = None if ylabels is None else np.atleast_1d(ylabels)
+    if intitles is not None:
+        intitles = np.atleast_2d(intitles)
+        rows, cols = intitles.shape
+    if rows is None and ylabels is not None:
+        rows = len(ylabels)
+    if cols is None and xlabels is not None:
+        cols = len(xlabels)
+    if rows is None or cols is None:
+        raise ValueError('cannot infer number of rows and columns')
+
+    fig, ax = plt.subplots(rows, cols, figsize=(subplotsize[1]*cols, subplotsize[0]*rows), # type: ignore
+                           sharex=sharex, sharey=sharey, tight_layout=tight_layout) 
+    ax = np.atleast_2d(ax) # type: ignore
+    for i in range(rows): 
+        if ylabels is not None:
+            ax[i][0].set_ylabel(ylabels[0] if len(ylabels)==1 else ylabels[i])
+    for j in range(cols):
+        if xlabels is not None:
+            ax[rows-1][j].set_xlabel(xlabels[0] if len(xlabels)==1 else xlabels[j])
+    
+    for i, j in np.ndindex(rows, cols):
+        if intitles is not None: 
+            ax[i][j].text(0.01, 0.99, intitles[i][j], transform=ax[i][j].transAxes, verticalalignment='top')
+        if xmargins is not None:
+            ax[i][j].set_xmargin(xmargins)
+        if ymargins is not None:
+            ax[i][j].set_ymargin(ymargins)
+        if xlims is not None:
+            ax[i][j].set_xlim(xlims)
+        if ylims is not None:
+            ax[i][j].set_ylim(ylims)
+    return fig, ax
+
+def apply(method, objs, *args, **kwargs):
+    """
+    Calls method on each element of array obs with provided arguments. Useful for
+    plotting consistently on an axes array.
+    """
+    from itertools import repeat
+    def _iter(a):
+        a = np.asarray(a)
+        if a.shape[:objs.ndim] == objs.shape:
+            return (a[idx] for idx in np.ndindex(objs.shape))
+        return repeat(a)
+    for vals in zip(objs.flat, *[_iter(a) for a in args]):
+        method(*vals, **kwargs)
 
 def centre_spines(ax: Axes):
     for spine in ['left', 'bottom']:
