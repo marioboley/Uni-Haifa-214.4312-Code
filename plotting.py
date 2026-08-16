@@ -26,7 +26,7 @@ def subplotgrid(xlabels=None, ylabels=None, intitles=None, rows=None, cols=None,
     if rows is None or cols is None:
         raise ValueError('cannot infer number of rows and columns')
 
-    fig, ax = plt.subplots(rows, cols, figsize=(subplotsize[1]*cols, subplotsize[0]*rows), # type: ignore
+    fig, ax = plt.subplots(rows, cols, figsize=(subplotsize[0]*cols, subplotsize[1]*rows), # type: ignore
                            sharex=sharex, sharey=sharey, tight_layout=tight_layout) 
     ax = np.atleast_2d(ax) # type: ignore
     for i in range(rows): 
