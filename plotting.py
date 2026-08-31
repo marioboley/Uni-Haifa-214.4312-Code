@@ -11,32 +11,96 @@ plot = Axes.plot
 scatter = Axes.scatter
 axvline = Axes.axvline
 
+CM = 1 / 2.54
+SLIDE_FIG_DIMS = np.array([32*CM, 14.17*CM])
+MPL_DEFAULT_DIMS = np.array([6.4, 4.8])
+
+def cols_from_xlabels(xlabels: np.ndarray) -> int:
+    if xlabels.ndim == 2:
+        return xlabels.shape[1]
+    elif xlabels.ndim == 1:
+        return len(xlabels)
+    elif xlabels.ndim == 0:
+        return 1
+    else:
+        raise ValueError('invalid number of dimensions of xlabels')
+
+def rows_from_ylabels(ylabels: np.ndarray) -> int:
+    if ylabels.ndim == 2:
+        return ylabels.shape[0]
+    elif ylabels.ndim == 1:
+        return len(ylabels)
+    elif ylabels.ndim == 0:
+        return 1
+    else:
+        raise ValueError('invalid number of dimensions of ylabels')
+
+def xlabel(xlabels: np.ndarray, i: int, j: int, rows: int, cols: int) -> str | None:
+    if xlabels.ndim == 2:
+        return xlabels[i][j]
+    elif xlabels.ndim == 1 and len(xlabels) == cols and i==rows-1:
+        return xlabels[j]
+    elif xlabels.ndim == 1 and len(xlabels) == rows != cols:
+        return xlabels[i]
+    elif xlabels.ndim == 0 and i==rows-1:
+        return xlabels.item()
+    else:
+        return None
+
+def ylabel(ylabels: np.ndarray, i: int, j: int, rows: int, cols: int) -> str | None:
+    if ylabels.ndim == 2:
+        return ylabels[i][j]
+    elif ylabels.ndim == 1 and len(ylabels) == rows and j==0:
+        return ylabels[i]
+    elif ylabels.ndim == 1 and len(ylabels) == cols != rows:
+        return ylabels[j]
+    elif ylabels.ndim == 0 and j==0:
+        return ylabels.item()
+    else:
+        return None
+
 def subplotgrid(xlabels=None, ylabels=None, intitles=None, rows=None, cols=None, *,
-                subplotsize=(4, 4), tight_layout=True, sharex=True, sharey=True,
-                xlims=None, ylims=None, xmargins=0, ymargins=None):
-    xlabels = None if xlabels is None else np.atleast_1d(xlabels)
-    ylabels = None if ylabels is None else np.atleast_1d(ylabels)
+                figsize=None, subplotsize=(4, 4), tight_layout=True, sharex=True, sharey=True,
+                xlims=None, ylims=None, xmargins=0, ymargins=None,
+                squeeze=True):
+    """Opinionated wrapper around matplotlib's subplots that allows for a more declarative
+    style of figure creation.
+
+    Parameters
+    ----------
+
+    xlabels: array_like, default is None
+        x-axes labels,
+        applied per grid cell if shape is (rows, cols),
+        to last row if shape == (cols),
+        to each row if shape == (rows) != (cols),
+        to last row in all columns if scalar or 0d array,
+        used to infer number of grid columns if cols is None
+    """
+    xlabels = np.asarray(xlabels)
+    ylabels = np.asarray(ylabels)
     if intitles is not None:
         intitles = np.atleast_2d(intitles)
         rows, cols = intitles.shape
-    if rows is None and ylabels is not None:
-        rows = len(ylabels)
-    if cols is None and xlabels is not None:
-        cols = len(xlabels)
+    rows = rows if rows is not None else rows_from_ylabels(ylabels)
+    cols = cols if cols is not None else cols_from_xlabels(xlabels)
+
     if rows is None or cols is None:
         raise ValueError('cannot infer number of rows and columns')
 
-    fig, ax = plt.subplots(rows, cols, figsize=(subplotsize[0]*cols, subplotsize[1]*rows), # type: ignore
-                           sharex=sharex, sharey=sharey, tight_layout=tight_layout) 
-    ax = np.atleast_2d(ax) # type: ignore
-    for i in range(rows): 
-        if ylabels is not None:
-            ax[i][0].set_ylabel(ylabels[0] if len(ylabels)==1 else ylabels[i])
-    for j in range(cols):
-        if xlabels is not None:
-            ax[rows-1][j].set_xlabel(xlabels[0] if len(xlabels)==1 else xlabels[j])
+    if figsize is None and subplotsize is not None:
+        figsize = (subplotsize[0]*cols, subplotsize[1]*rows)
+    
+    fig, ax = plt.subplots(rows, cols, figsize=figsize, # type: ignore
+                           sharex=sharex, sharey=sharey, tight_layout=tight_layout,
+                           squeeze=False) 
     
     for i, j in np.ndindex(rows, cols):
+        if (label := ylabel(ylabels, i, j, rows, cols)) is not None:
+            ax[i][j].set_ylabel(label)
+        if (label := xlabel(xlabels, i, j, rows, cols)) is not None:
+            ax[i][j].set_xlabel(label)
+
         if intitles is not None: 
             ax[i][j].text(0.01, 0.99, intitles[i][j], transform=ax[i][j].transAxes, verticalalignment='top')
         if xmargins is not None:
@@ -47,6 +111,10 @@ def subplotgrid(xlabels=None, ylabels=None, intitles=None, rows=None, cols=None,
             ax[i][j].set_xlim(xlims)
         if ylims is not None:
             ax[i][j].set_ylim(ylims)
+    
+    if squeeze:
+        ax = ax.item() if ax.size == 1 else np.squeeze(ax)
+
     return fig, ax
 
 def apply(method, objs, *args, **kwargs):
@@ -189,6 +257,10 @@ def superimpose_axis(ax, positions, labels=None, **kwargs):
     return artist
 
 Axes.superimpose_axis = superimpose_axis
+
+def plotf(ax, f, a, b, res=200, **kwargs):
+    xs = np.linspace(a, b, res)
+    ax.plot(xs, f(xs), **kwargs)
 
 def histo(ax, y, bins=None, range=None):
     """Plots histogram density with correct normalisation by overall
