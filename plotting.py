@@ -6,6 +6,14 @@ import matplotlib.patches as mpatches
 import matplotlib.transforms as mtransforms
 from matplotlib.axes import Axes
 from matplotlib import pyplot as plt
+import shutil
+import matplotlib
+
+matplotlib.rcParams['text.usetex'] = shutil.which('latex') is not None
+# matplotlib.rcParams['text.latex.preamble'] = r'\usepackage{amssymb}'
+# matplotlib.rcParams['text.latex.preamble'] = r'\usepackage{amssymb}\usepackage{cmbright}'
+matplotlib.rcParams['text.latex.preamble'] = r'\usepackage{amsmath}\usepackage{newtxtext}\usepackage{newtxmath}'
+matplotlib.rcParams['figure.dpi'] = 200
 
 plot = Axes.plot
 scatter = Axes.scatter
