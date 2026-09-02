@@ -14,6 +14,7 @@ matplotlib.rcParams['text.usetex'] = shutil.which('latex') is not None
 # matplotlib.rcParams['text.latex.preamble'] = r'\usepackage{amssymb}\usepackage{cmbright}'
 matplotlib.rcParams['text.latex.preamble'] = r'\usepackage{amsmath}\usepackage{newtxtext}\usepackage{newtxmath}'
 matplotlib.rcParams['figure.dpi'] = 200
+matplotlib.rcParams['font.size'] += 2
 
 plot = Axes.plot
 scatter = Axes.scatter
@@ -21,6 +22,7 @@ axvline = Axes.axvline
 
 CM = 1 / 2.54
 SLIDE_FIG_DIMS = np.array([32*CM, 14.17*CM])
+HALF_SLIDE_DIMS = np.array([SLIDE_FIG_DIMS[0] / 2, SLIDE_FIG_DIMS[1]])
 MPL_DEFAULT_DIMS = np.array([6.4, 4.8])
 
 def cols_from_xlabels(xlabels: np.ndarray) -> int:
@@ -283,6 +285,7 @@ def plot_pmf(ax, x, pmf):
     p = pmf(x)
     ax.vlines(x, 0, p, colors='k', linestyles='--')
     ax.scatter(x, p, facecolors='white', linewidths=1.5, edgecolors='k', zorder=3)
+    ax.set_ylim(np.array([0, 1.01])*ax.get_ylim())
 
 def histo_int(ax, y, a=None, b=None, width=0.6, pmf=None):
     """Plots a histogram for integer data with bins that are centred around the 
