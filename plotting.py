@@ -23,6 +23,7 @@ axvline = Axes.axvline
 CM = 1 / 2.54
 SLIDE_FIG_DIMS = np.array([32*CM, 14.17*CM])
 HALF_SLIDE_DIMS = np.array([SLIDE_FIG_DIMS[0] / 2, SLIDE_FIG_DIMS[1]])
+VERTICAL_HALF_SLIDE_DIMS = np.array([SLIDE_FIG_DIMS[0], SLIDE_FIG_DIMS[1] / 2])
 MPL_DEFAULT_DIMS = np.array([6.4, 4.8])
 
 def cols_from_xlabels(xlabels: np.ndarray) -> int:
