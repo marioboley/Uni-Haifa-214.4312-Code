@@ -285,7 +285,7 @@ def histo(ax, y, bins=None, range=None):
 def plot_pmf(ax, x, pmf):
     p = pmf(x)
     ax.vlines(x, 0, p, colors='k', linestyles='--')
-    ax.scatter(x, p, facecolors='white', linewidths=1.5, edgecolors='k', zorder=3)
+    ax.scatter(x, p, facecolors='black', linewidths=1.5, edgecolors='k', zorder=3)
     ax.set_ylim(np.array([0, 1.01])*ax.get_ylim())
 
 def histo_int(ax, y, a=None, b=None, width=0.6, pmf=None):
