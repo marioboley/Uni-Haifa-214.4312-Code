@@ -269,9 +269,63 @@ def superimpose_axis(ax, positions, labels=None, **kwargs):
 
 Axes.superimpose_axis = superimpose_axis
 
-def plotf(ax, f, a, b, res=200, **kwargs):
-    xs = np.linspace(a, b, res)
-    ax.plot(xs, f(xs), **kwargs)
+# def plotf(ax, f, a, b, res=200, **kwargs):
+#     xs = np.linspace(a, b, res)
+#     ax.plot(xs, f(xs), **kwargs)
+
+def plotf(ax, f, a, b, discont=None, sides='left', n=200, **kwargs):
+    """Plots function with potential jump discontinuities.
+
+    Parameters
+    ----------
+
+    f: callable
+        the function to plot
+    
+    a: float
+        the lower interval bound from which to plot the function
+
+    b: float
+        the upper interval bound from which to plot the function
+    
+    discont: array_like of floats (default None)
+        the distinct ordered x-value(s) where f exhibits jump discontinuities
+
+    sides: array_like of 'left' or 'right'
+        the side(s) of the discontinuities, i.e., when approaching discontinuity z
+        from side, the limit of f(x) is not equal to f(z)
+
+    n: int
+        the number of points to plot per continuous function segment
+    """
+    discont = np.atleast_1d(discont) if discont is not None else np.array([])
+    sides = np.broadcast_to(sides, discont.shape)
+
+    nodes, idx = np.unique(np.concatenate((discont, [a, b])), return_index=True) # takes index of a,b occurence in discont if present
+    sides = np.concatenate((sides, [None, None]))[idx]
+
+    eps = np.sqrt(np.finfo(float).eps)
+    hs = eps * np.maximum(np.abs(nodes), 1.0)
+    starts = np.where((sides=='right') | (sides=='both'), nodes + hs, nodes)[:-1]
+    ends   = np.where((sides=='left')  | (sides=='both'), nodes - hs, nodes)[1:]
+
+    color = kwargs.pop('color', None)
+    label = kwargs.pop('label', None)
+    for s, e in zip(starts, ends):
+        xs = np.linspace(s, e, n)
+        ys = f(xs)
+        line, = ax.plot(xs, ys, color=color, label=label if s==starts[0] else None, **kwargs)
+        color = line.get_color()
+
+    for x, side in zip(nodes, sides):
+        if side is None or side=='none':
+            continue
+        h = eps * max(abs(x), 1.0)
+        if side=='left' or side=='both':
+            ax.scatter([x], [f(x-h)], facecolors='white', edgecolors=color, zorder=3)
+        if side=='right' or side=='both':
+            ax.scatter([x], [f(x+h)], facecolors='white', edgecolors=color, zorder=3)
+        ax.scatter(x, f(x), facecolors=color, edgecolors=color, zorder=3)
 
 def histo(ax, y, bins=None, range=None):
     """Plots histogram density with correct normalisation by overall
