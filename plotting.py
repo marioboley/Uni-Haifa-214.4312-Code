@@ -8,6 +8,7 @@ from matplotlib.axes import Axes
 from matplotlib import pyplot as plt
 import shutil
 import matplotlib
+from numpy.typing import ArrayLike
 
 matplotlib.rcParams['text.usetex'] = shutil.which('latex') is not None
 # matplotlib.rcParams['text.latex.preamble'] = r'\usepackage{amssymb}'
@@ -273,7 +274,7 @@ Axes.superimpose_axis = superimpose_axis
 #     xs = np.linspace(a, b, res)
 #     ax.plot(xs, f(xs), **kwargs)
 
-def plotf(ax, f, a, b, discont=None, sides='left', n=200, **kwargs):
+def plotf(ax:Axes, f, a:float, b:float, discont:None | float | ArrayLike = None, sides: str | ArrayLike='left', n:int=200, **kwargs):
     """Plots function with potential jump discontinuities.
 
     Parameters
@@ -291,7 +292,7 @@ def plotf(ax, f, a, b, discont=None, sides='left', n=200, **kwargs):
     discont: array_like of floats (default None)
         the distinct ordered x-value(s) where f exhibits jump discontinuities
 
-    sides: array_like of 'left' or 'right'
+    sides: array_like of 'left', 'right', or 'both'
         the side(s) of the discontinuities, i.e., when approaching discontinuity z
         from side, the limit of f(x) is not equal to f(z)
 
@@ -336,10 +337,10 @@ def histo(ax, y, bins=None, range=None):
     counts, edges = np.histogram(y, bins=bins, range=range)
     ax.stairs(counts / (len(y) * (edges[1] - edges[0])), edges, fill=True)
 
-def plot_pmf(ax, x, pmf):
+def plot_pmf(ax, x, pmf, color='k'):
     p = pmf(x)
-    ax.vlines(x, 0, p, colors='k', linestyles='--')
-    ax.scatter(x, p, facecolors='black', linewidths=1.5, edgecolors='k', zorder=3)
+    ax.vlines(x, 0, p, colors=color, linestyles='--')
+    ax.scatter(x, p, facecolors=color, linewidths=1.5, edgecolors=color, zorder=3)
     ax.set_ylim(np.array([0, 1.01])*ax.get_ylim())
 
 def histo_int(ax, y, a=None, b=None, width=0.6, pmf=None):
