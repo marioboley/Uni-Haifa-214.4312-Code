@@ -5,10 +5,12 @@ import matplotlib.text as mtext
 import matplotlib.patches as mpatches
 import matplotlib.transforms as mtransforms
 from matplotlib.axes import Axes
+from matplotlib.figure import Figure
 from matplotlib import pyplot as plt
 import shutil
 import matplotlib
-from numpy.typing import ArrayLike
+from numpy.typing import ArrayLike, NDArray
+from typing import Tuple
 
 matplotlib.rcParams['text.usetex'] = shutil.which('latex') is not None
 # matplotlib.rcParams['text.latex.preamble'] = r'\usepackage{amssymb}'
@@ -74,7 +76,7 @@ def ylabel(ylabels: np.ndarray, i: int, j: int, rows: int, cols: int) -> str | N
 def subplotgrid(xlabels=None, ylabels=None, intitles=None, rows=None, cols=None, *,
                 figsize=None, subplotsize=(4, 4), tight_layout=True, sharex=True, sharey=True,
                 xlims=None, ylims=None, xmargins=0, ymargins=None,
-                squeeze=True):
+                squeeze=True) -> Tuple[Figure, Axes | NDArray[Axes] | NDArray[NDArray[Axes]]]:
     """Opinionated wrapper around matplotlib's subplots that allows for a more declarative
     style of figure creation.
 
